@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="소비브레이크">
+<meta name="theme-color" content="#0f1420">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230f1420'/%3E%3Ctext x='90' y='124' font-size='96' text-anchor='middle'%3E%F0%9F%9B%91%3C/text%3E%3C/svg%3E">
+<title>소비 브레이크</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:#0f1420;color:#e8ecf5;
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",Pretendard,system-ui,sans-serif;
+  font-size:16px;line-height:1.5;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(env(safe-area-inset-bottom) + 80px) env(safe-area-inset-left);
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:520px;margin:0 auto;padding:16px 16px 24px}
+h1{font-size:20px;margin:8px 0 2px;letter-spacing:-.5px}
+.sub{font-size:13px;color:#8b96ad;margin:0 0 18px}
+.card{background:#1a2133;border:1px solid #252e45;border-radius:16px;padding:16px;margin-bottom:14px}
+.card h2{font-size:15px;margin:0 0 12px;color:#c9d3e8;letter-spacing:-.3px}
+label{display:block;font-size:13px;color:#8b96ad;margin:12px 0 6px}
+input[type=text],input[type=number],select{
+  width:100%;padding:13px 14px;font-size:17px;border-radius:12px;
+  border:1px solid #303a54;background:#111726;color:#e8ecf5;
+  font-family:inherit;-webkit-appearance:none;appearance:none;
+}
+input:focus,select:focus{outline:none;border-color:#5b8cff}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b96ad' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.unit{position:relative}
+.unit .u{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:14px;color:#8b96ad;pointer-events:none}
+.unit input{padding-right:52px}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;min-height:46px;border-radius:12px;border:1px solid #303a54;background:#111726;color:#8b96ad;font-size:14px;font-family:inherit;font-weight:600}
+.seg button.on{background:#243255;border-color:#5b8cff;color:#cfe0ff}
+.chk{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid #252e45;border-radius:12px;margin-bottom:8px;background:#141a29;min-height:44px}
+.chk input{width:22px;height:22px;margin:1px 0 0;accent-color:#5b8cff;flex:0 0 auto}
+.chk span{font-size:14px;color:#c9d3e8;line-height:1.45}
+.chk small{display:block;color:#7c879e;font-size:12px;margin-top:2px}
+button.big{width:100%;min-height:52px;border-radius:14px;border:none;background:#5b8cff;color:#fff;font-size:17px;font-weight:700;font-family:inherit;margin-top:14px}
+button.big:active{opacity:.75}
+button.ghost{background:#232c42;color:#c9d3e8}
+.row2{display:flex;gap:10px;margin-top:14px}
+.row2 button{flex:1;min-height:50px;border-radius:14px;border:none;font-size:15px;font-weight:700;font-family:inherit}
+.hold{background:#1f7a4d;color:#fff}
+.bought{background:#3a2430;color:#e0a8b8}
+.res{border-radius:16px;padding:18px 16px;margin-top:14px;border:1px solid}
+.res.good{background:#122a1d;border-color:#1f6b45}
+.res.think{background:#2c2513;border-color:#7a5e1f}
+.res.stop{background:#2e1620;border-color:#7c2b43}
+.verdict{font-size:22px;font-weight:800;letter-spacing:-.6px;margin:0 0 4px}
+.good .verdict{color:#5be09b}
+.think .verdict{color:#f0c257}
+.stop .verdict{color:#ff7a95}
+.tag{display:inline-block;font-size:12px;padding:4px 10px;border-radius:999px;background:#0f1420;color:#a8b4cc;margin-bottom:10px}
+.big-num{font-size:32px;font-weight:800;letter-spacing:-1.2px;margin:12px 0 2px;color:#fff}
+.res p{margin:6px 0;font-size:14px;color:#c9d3e8}
+.res .why{font-size:13px;color:#9aa6bf;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th,td{padding:9px 6px;text-align:right;border-bottom:1px solid #232c42}
+th{color:#8b96ad;font-weight:600;font-size:12px}
+td:first-child,th:first-child{text-align:left}
+tr.hit td{color:#5be09b;font-weight:700}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:11px 0;border-bottom:1px solid #232c42;font-size:14px}
+.kv:last-child{border-bottom:none}
+.kv span:first-child{color:#8b96ad}
+.kv b{font-weight:700;color:#fff;font-size:15px;text-align:right}
+.kv b.hl{color:#5be09b;font-size:19px}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:#141a29;border-top:1px solid #252e45;padding-bottom:env(safe-area-inset-bottom);z-index:20}
+.tabs button{flex:1;min-height:60px;background:none;border:none;color:#6b768d;font-size:11px;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 0}
+.tabs button b{font-size:19px;line-height:1}
+.tabs button.on{color:#5b8cff}
+.hidden{display:none}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid #232c42}
+.item:last-child{border-bottom:none}
+.item .nm{font-size:15px;color:#e8ecf5;font-weight:600}
+.item .dt{font-size:12px;color:#7c879e;margin-top:2px}
+.item .amt{text-align:right;font-size:14px;font-weight:700;white-space:nowrap}
+.item .amt.h{color:#5be09b}
+.item .amt.b{color:#e0879f}
+.del{background:none;border:none;color:#5a6478;font-size:20px;padding:6px 2px 6px 8px;min-height:44px}
+.empty{text-align:center;color:#6b768d;font-size:14px;padding:26px 0}
+.note{font-size:12px;color:#7c879e;line-height:1.6;margin-top:10px}
+.hero{background:linear-gradient(140deg,#1b3a2b,#16233a);border:1px solid #2a4a3a}
+.hero .big-num{color:#5be09b;font-size:34px}
+.presets{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.presets button{flex:1;min-width:72px;min-height:42px;border-radius:10px;border:1px solid #303a54;background:#111726;color:#8b96ad;font-size:12px;font-family:inherit}
+.presets button.on{border-color:#5b8cff;color:#cfe0ff;background:#243255}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="t-judge">
+  <h1>🛑 소비 브레이크</h1>
+  <p class="sub">사기 전에 한 번. 이 돈이 나중에 얼마가 되는지 봅니다.</p>
+
+  <div class="card">
+    <h2>무엇을 사려고 하시나요?</h2>
+    <label>물건 / 지출 이름</label>
+    <input type="text" id="j-name" placeholder="예: 무선 이어폰, 넷플릭스 구독">
+    <label>가격</label>
+    <div class="unit"><input type="number" id="j-price" inputmode="numeric" placeholder="0"><span class="u">원</span></div>
+    <label>이 지출은?</label>
+    <div class="seg">
+      <button type="button" id="j-once" class="on" onclick="setKind('once')">한 번만 낸다</button>
+      <button type="button" id="j-month" onclick="setKind('month')">매달 나간다</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>솔직하게 체크해주세요</h2>
+    <label class="chk"><input type="checkbox" id="q1"><span>이건 <b>자산</b>을 사는 돈이다<small>주식·부동산처럼 나중에 돈을 낳아주는 것 (닭)</small></span></label>
+    <label class="chk"><input type="checkbox" id="q2"><span>내 <b>돈 버는 능력</b>이 올라간다<small>수익률 공부, 기술 습득, 상품 만들기, 노출 늘리기</small></span></label>
+    <label class="chk"><input type="checkbox" id="q3"><span>이게 없으면 <b>생활이 안 된다</b><small>진짜 필수인지 한 번 더 생각해보세요</small></span></label>
+    <label class="chk"><input type="checkbox" id="q4"><span>솔직히 <b>남한테 보여주고 싶은</b> 마음도 있다<small>남의 시선에 내 시간을 지불하는 것</small></span></label>
+    <button class="big" onclick="judge()">판정하기</button>
+  </div>
+
+  <div id="j-result"></div>
+</section>
+
+<section id="t-goal" class="hidden">
+  <h1>🎓 나의 졸업 목표</h1>
+  <p class="sub">자산에서 나오는 돈이 생활비를 넘는 순간이 졸업입니다.</p>
+
+  <div class="card">
+    <h2>내 숫자 넣기</h2>
+    <label>졸업 후 매달 쓰고 싶은 생활비 (세후)</label>
+    <div class="unit"><input type="number" id="g-living" inputmode="numeric"><span class="u">만원</span></div>
+    <label>지금 매달 저축·투자하는 금액</label>
+    <div class="unit"><input type="number" id="g-saving" inputmode="numeric"><span class="u">만원</span></div>
+    <label>이미 모아둔 자산</label>
+    <div class="unit"><input type="number" id="g-asset" inputmode="numeric"><span class="u">만원</span></div>
+    <label>기대 수익률 (연)</label>
+    <div class="unit"><input type="number" id="g-rate" inputmode="decimal" step="0.1"><span class="u">%</span></div>
+    <div class="presets">
+      <button type="button" data-r="3" onclick="setRate(3)">예금 3%</button>
+      <button type="button" data-r="4" onclick="setRate(4)">예금 4%</button>
+      <button type="button" data-r="6" onclick="setRate(6)">배당·월세 6%</button>
+      <button type="button" data-r="8" onclick="setRate(8)">공부 후 8%</button>
+    </div>
+    <label>자산소득 종류 (세금 계산용)</label>
+    <select id="g-type">
+      <option value="fin">배당·이자 위주 (2천만원까지 15.4% 분리과세)</option>
+      <option value="rent">월세 위주 (전액 종합소득세)</option>
+    </select>
+    <button class="big" onclick="saveGoal()">계산하기</button>
+    <p class="note">한국 세율 기준입니다. 금융소득 2,000만원까지는 15.4% 분리과세, 초과분은 종합소득세율(지방소득세 10% 포함)을 적용합니다. 수익률은 지금 시점 금리에 맞게 직접 바꿔서 쓰세요.</p>
+  </div>
+
+  <div id="g-result"></div>
+</section>
+
+<section id="t-log" class="hidden">
+  <h1>📒 내가 지킨 돈</h1>
+  <p class="sub">참은 것과 산 것. 숫자로 남깁니다.</p>
+  <div id="l-hero"></div>
+  <div class="card"><h2>참은 것</h2><div id="l-hold"></div></div>
+  <div class="card"><h2>산 것</h2><div id="l-bought"></div></div>
+  <div class="card"><button class="big ghost" onclick="resetAll()">기록 전체 지우기</button></div>
+</section>
+
+</div>
+
+<nav class="tabs">
+  <button id="tab-judge" class="on" onclick="showTab('judge')"><b>🛑</b>소비 판정</button>
+  <button id="tab-goal" onclick="showTab('goal')"><b>🎓</b>졸업 목표</button>
+  <button id="tab-log" onclick="showTab('log')"><b>📒</b>기록</button>
+</nav>
+
+<script>
+"use strict";
+var KEY = "spendingBrake_v1";
+var DEF = { living:400, saving:200, asset:0, rate:6, type:"fin", kind:"once", records:[] };
+var S = load();
+
+function load(){
+  try{
+    var raw = localStorage.getItem(KEY);
+    if(!raw) return JSON.parse(JSON.stringify(DEF));
+    var o = JSON.parse(raw);
+    for(var k in DEF){ if(!(k in o)) o[k] = DEF[k]; }
+    if(!Array.isArray(o.records)) o.records = [];
+    return o;
+  }catch(e){ return JSON.parse(JSON.stringify(DEF)); }
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+function won(n){
+  if(!isFinite(n)) return "-";
+  n = Math.round(n);
+  var neg = n < 0; n = Math.abs(n);
+  var s;
+  if(n >= 100000000){
+    var eok = Math.floor(n/100000000);
+    var man = Math.round((n%100000000)/10000);
+    s = eok + "억" + (man > 0 ? " " + man.toLocaleString() + "만" : "") + "원";
+  } else if(n >= 10000){
+    var m = Math.floor(n/10000), r = Math.round(n%10000);
+    s = m.toLocaleString() + "만" + (r > 0 ? " " + r.toLocaleString() : "") + "원";
+  } else {
+    s = n.toLocaleString() + "원";
+  }
+  return (neg ? "-" : "") + s;
+}
+function num(id){ var v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; }
+
+function comprehensiveTax(base){
+  var B = [[14000000,0.06,0],[50000000,0.15,1260000],[88000000,0.24,5760000],
+           [150000000,0.35,15440000],[300000000,0.38,19940000],[500000000,0.40,25940000],
+           [1000000000,0.42,35940000],[Infinity,0.45,65940000]];
+  for(var i=0;i<B.length;i++){
+    if(base <= B[i][0]) return Math.max(0, base*B[i][1] - B[i][2]) * 1.1;
+  }
+  return 0;
+}
+function taxOn(gross, type){
+  if(gross <= 0) return 0;
+  if(type === "rent") return comprehensiveTax(gross);
+  var sep = Math.min(gross, 20000000);
+  var tax = sep * 0.154;
+  var over = gross - sep;
+  if(over > 0) tax += comprehensiveTax(over);
+  return tax;
+}
+function grossUp(net, type){
+  if(net <= 0) return 0;
+  var lo = net, hi = net * 3 + 10000000;
+  for(var i=0;i<80;i++){
+    var mid = (lo + hi) / 2;
+    if(mid - taxOn(mid, type) < net) lo = mid; else hi = mid;
+  }
+  return hi;
+}
+
+function yearsTo(target, P, A, r){
+  if(P >= target) return 0;
+  if(A <= 0) return Infinity;
+  if(r <= 0) return (target - P) / A;
+  var n = Math.log((target + A/r) / (P + A/r)) / Math.log(1 + r);
+  return (isFinite(n) && n > 0) ? n : Infinity;
+}
+function fv(P, A, r, n){ return P*Math.pow(1+r,n) + A*(Math.pow(1+r,n)-1)/r; }
+
+function calcGoal(o){
+  var r = o.rate/100;
+  var netAnnual = o.living * 10000 * 12;
+  var gross = grossUp(netAnnual, o.type);
+  var need = r > 0 ? gross / r : Infinity;
+  var P = o.asset * 10000;
+  var A = o.saving * 10000 * 12;
+  return { r:r, netAnnual:netAnnual, gross:gross, tax:gross-netAnnual, need:need, P:P, A:A, years:yearsTo(need,P,A,r) };
+}
+
+function showTab(name){
+  ["judge","goal","log"].forEach(function(t){
+    document.getElementById("t-"+t).classList.toggle("hidden", t !== name);
+    document.getElementById("tab-"+t).classList.toggle("on", t === name);
+  });
+  if(name === "log") renderLog();
+  if(name === "goal") renderGoal();
+  window.scrollTo(0,0);
+}
+
+function setKind(k){
+  S.kind = k; save();
+  document.getElementById("j-once").classList.toggle("on", k === "once");
+  document.getElementById("j-month").classList.toggle("on", k === "month");
+}
+
+var lastJudge = null;
+
+function judge(){
+  var name = document.getElementById("j-name").value.trim() || "이름 없는 지출";
+  var price = num("j-price");
+  if(price <= 0){ alert("가격을 넣어주세요."); return; }
+
+  var q1 = document.getElementById("q1").checked;
+  var q2 = document.getElementById("q2").checked;
+  var q3 = document.getElementById("q3").checked;
+  var q4 = document.getElementById("q4").checked;
+
+  var g = calcGoal(S);
+  var r = g.r, n = g.years;
+  var monthly = (S.kind === "month");
+
+  var tag, level, why;
+  if(q1){
+    tag = "🐔 닭을 사는 지출 (자산형)"; level = "good";
+    why = "자산은 돈을 낳습니다. 이건 소비가 아니라 졸업을 앞당기는 쪽입니다.";
+  } else if(q2){
+    tag = "📚 수익률을 올리는 지출 (성장형)"; level = "good";
+    var gap = (g.gross > 0) ? (g.gross/0.04 - g.gross/0.06) : 0;
+    why = "수익률 4%를 6%로 올리면 필요 원금이 " + won(gap) + " 줄어듭니다. 공부값은 소비가 아닙니다.";
+  } else if(q4){
+    tag = "🎭 남의 시선 지출"; level = "stop";
+    why = "남이 먼저 졸업하는 걸 싫어하는 게 사람 마음입니다. 그 시선 때문에 내 졸업을 미루지 마세요.";
+  } else if(monthly && !q3){
+    tag = "⛓️ 새로 생기는 고정지출"; level = "stop";
+    why = "한 번 쓰는 돈보다 매달 나가는 돈이 훨씬 무섭습니다. 평생 따라옵니다.";
+  } else if(monthly && q3){
+    tag = "⛓️ 꼭 필요한 고정지출"; level = "think";
+    why = "필수라도 매달 나가는 돈은 자산을 영구히 잡아먹습니다. 더 싼 대안이 없는지 한 번만 더 보세요.";
+  } else if(q3){
+    tag = "🥚 필요한 달걀 (필수 소비)"; level = "good";
+    why = "필요한 소비입니다. 다만 아래 미래 금액은 기억해두세요.";
+  } else {
+    tag = "🍬 그냥 달걀 (선택 소비)"; level = "think";
+    why = "지금 쓰는 돈은 미래의 내가 다시 벌어서 갚아야 합니다.";
+  }
+
+  var futureValue = 0;
+  var h = '<div class="res ' + level + '">';
+  h += '<span class="tag">' + tag + '</span>';
+  h += '<p class="verdict">' + (level === "good" ? "사도 됩니다" : (level === "think" ? "한 번 더 생각하세요" : "사지 마세요")) + '</p>';
+  h += '<p style="color:#a8b4cc;font-size:13px;margin:0">' + esc(name) + ' · ' + won(price) + (monthly ? " / 매달" : "") + '</p>';
+
+  if(monthly){
+    var assetEq = r > 0 ? price * 12 / r : Infinity;
+    var mult = r > 0 ? Math.round(12 / r) : 0;
+    futureValue = assetEq;
+    h += '<div class="big-num">' + won(assetEq) + '</div>';
+    h += '<p>이 지출을 평생 감당하려면 필요한 <b>자산</b>입니다. (×' + mult + ' 규칙)</p>';
+    var n2 = yearsTo(g.need, g.P, g.A - price*12, r);
+    if(isFinite(n2) && isFinite(n)){
+      h += '<p>👉 내 졸업이 <b style="color:#ff9db3">' + ((n2-n)*12).toFixed(1) + '개월</b> 미뤄집니다.</p>';
+    } else if(isFinite(n)){
+      h += '<p>👉 이 지출을 떠안으면 <b style="color:#ff9db3">졸업이 불가능</b>해집니다.</p>';
+    }
+  } else {
+    var mult2 = isFinite(n) ? Math.pow(1+r, n) : 1;
+    futureValue = price * mult2;
+    h += '<div class="big-num">' + won(futureValue) + '</div>';
+    if(isFinite(n)){
+      h += '<p>안 쓰고 굴렸다면 <b>' + n.toFixed(1) + '년 뒤</b>(졸업 시점) 이 금액이 됩니다. (×' + mult2.toFixed(2) + ' 규칙)</p>';
+    } else {
+      h += '<p>먼저 [졸업 목표] 탭에서 내 숫자를 넣으면 미래 금액이 계산됩니다.</p>';
+    }
+  }
+  h += '<p class="why">' + why + '</p>';
+  h += '<div class="row2"><button class="hold" onclick="record(1)">참았다 💪</button><button class="bought" onclick="record(0)">샀다</button></div>';
+  h += '</div>';
+
+  document.getElementById("j-result").innerHTML = h;
+  lastJudge = { name:name, price:price, monthly:monthly, tag:tag, future:futureValue };
+  document.getElementById("j-result").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function record(held){
+  if(!lastJudge) return;
+  S.records.unshift({
+    id: Date.now(), name: lastJudge.name, price: lastJudge.price,
+    monthly: lastJudge.monthly, tag: lastJudge.tag,
+    future: (isFinite(lastJudge.future) ? lastJudge.future : 0),
+    held: !!held, ts: Date.now()
+  });
+  save();
+  document.getElementById("j-result").innerHTML =
+    '<div class="res ' + (held ? "good" : "think") + '"><p class="verdict">기록했습니다' + (held ? " 💪" : "") + '</p><p>' +
+    (held ? "지킨 미래 자산 " + won(lastJudge.future) : "다음엔 한 번 더 생각해봐요") + '</p></div>';
+  document.getElementById("j-name").value = "";
+  document.getElementById("j-price").value = "";
+  ["q1","q2","q3","q4"].forEach(function(i){ document.getElementById(i).checked = false; });
+  lastJudge = null;
+}
+
+function setRate(v){ document.getElementById("g-rate").value = v; saveGoal(); }
+
+function saveGoal(){
+  S.living = num("g-living");
+  S.saving = num("g-saving");
+  S.asset  = num("g-asset");
+  S.rate   = num("g-rate");
+  S.type   = document.getElementById("g-type").value;
+  save();
+  renderGoal();
+}
+
+function renderGoal(){
+  document.getElementById("g-living").value = S.living;
+  document.getElementById("g-saving").value = S.saving;
+  document.getElementById("g-asset").value  = S.asset;
+  document.getElementById("g-rate").value   = S.rate;
+  document.getElementById("g-type").value   = S.type;
+  var pb = document.querySelectorAll(".presets button");
+  for(var i=0;i<pb.length;i++){ pb[i].classList.toggle("on", parseFloat(pb[i].getAttribute("data-r")) === S.rate); }
+
+  var box = document.getElementById("g-result");
+  if(S.living <= 0 || S.rate <= 0){ box.innerHTML = '<p class="note">생활비와 수익률을 넣고 [계산하기]를 눌러주세요.</p>'; return; }
+  var g = calcGoal(S);
+
+  var h = '<div class="card hero"><h2 style="color:#9fd8bb">내 졸업 조건</h2>';
+  h += '<div class="kv"><span>매달 쓸 돈 (세후)</span><b>' + won(S.living*10000) + '</b></div>';
+  h += '<div class="kv"><span>1년에 필요한 돈 (세후)</span><b>' + won(g.netAnnual) + '</b></div>';
+  h += '<div class="kv"><span>세금 붙인 세전 목표</span><b>' + won(g.gross) + '</b></div>';
+  h += '<div class="kv"><span>내야 할 세금 (1년)</span><b>' + won(g.tax) + '</b></div>';
+  h += '<div class="kv"><span>필요한 원금 (' + S.rate + '%)</span><b class="hl">' + won(g.need) + '</b></div>';
+  h += '</div>';
+
+  h += '<div class="card"><h2>언제 졸업하나</h2>';
+  if(!isFinite(g.years)){
+    h += '<p class="note" style="color:#ff9db3;font-size:14px">지금 저축액으로는 목표에 닿지 않습니다. 저축을 늘리거나 생활비 목표를 낮춰보세요.</p>';
+  } else {
+    h += '<div class="kv"><span>남은 기간</span><b class="hl">' + g.years.toFixed(1) + '년</b></div>';
+    h += '<div class="kv"><span>졸업 예상 연도</span><b>' + (new Date().getFullYear() + Math.ceil(g.years)) + '년</b></div>';
+    h += '<div class="kv"><span>한 번 쓴 돈의 미래 배수</span><b>×' + Math.pow(1+g.r, g.years).toFixed(2) + '</b></div>';
+    h += '<div class="kv"><span>매달 1만원의 자산 무게</span><b>×' + Math.round(12/g.r) + ' = ' + won(120000/g.r) + '</b></div>';
+  }
+  h += '</div>';
+
+  if(isFinite(g.years)){
+    h += '<div class="card"><h2>해마다 얼마가 쌓이나</h2><table><tr><th>연차</th><th>모은 자산</th><th>월 자산소득(세후)</th></tr>';
+    var lim = Math.min(Math.ceil(g.years) + 1, 45);
+    for(var i=1;i<=lim;i++){
+      var v = fv(g.P, g.A, g.r, i);
+      var incGross = v * g.r;
+      var incNet = (incGross - taxOn(incGross, S.type)) / 12;
+      var hit = v >= g.need;
+      h += '<tr class="' + (hit ? "hit" : "") + '"><td>' + i + '년</td><td>' + won(v) + '</td><td>' + won(incNet) + '</td></tr>';
+      if(hit) break;
+    }
+    h += '</table><p class="note">연 ' + S.rate + '% 복리, 매년 말 ' + won(g.A) + ' 적립 기준입니다.</p></div>';
+  }
+
+  h += '<div class="card"><h2>수익률만 바꿔도 이만큼 달라집니다</h2><table><tr><th>수익률</th><th>필요 원금</th><th>걸리는 시간</th></tr>';
+  [3,4,5,6,7,8].forEach(function(rr){
+    var r2 = rr/100, need2 = g.gross/r2;
+    var n2 = yearsTo(need2, g.P, g.A, r2);
+    h += '<tr class="' + (rr === S.rate ? "hit" : "") + '"><td>' + rr + '%</td><td>' + won(need2) + '</td><td>' + (isFinite(n2) ? n2.toFixed(1) + '년' : '도달 불가') + '</td></tr>';
+  });
+  h += '</table><p class="note">수익률 2%p 차이가 곧 억 단위 차이입니다. 그래서 공부는 소비가 아니라 투자입니다.</p></div>';
+
+  box.innerHTML = h;
+}
+
+function renderLog(){
+  var held = S.records.filter(function(x){ return x.held; });
+  var bought = S.records.filter(function(x){ return !x.held; });
+  var savedFuture = held.reduce(function(a,b){ return a + (b.future || 0); }, 0);
+  var spentFuture = bought.reduce(function(a,b){ return a + (b.future || 0); }, 0);
+
+  document.getElementById("l-hero").innerHTML =
+    '<div class="card hero"><h2 style="color:#9fd8bb">참아서 지킨 미래 자산</h2><div class="big-num">' + won(savedFuture) + '</div>' +
+    '<p class="note">참은 ' + held.length + '건 · 산 ' + bought.length + '건 · 산 것의 미래 금액 ' + won(spentFuture) + '</p></div>';
+
+  document.getElementById("l-hold").innerHTML = held.length ? held.map(li).join("") : '<p class="empty">아직 없습니다</p>';
+  document.getElementById("l-bought").innerHTML = bought.length ? bought.map(li).join("") : '<p class="empty">아직 없습니다</p>';
+}
+function li(x){
+  var d = new Date(x.ts);
+  var ds = (d.getMonth()+1) + "월 " + d.getDate() + "일";
+  return '<div class="item"><div><div class="nm">' + esc(x.name) + '</div>' +
+    '<div class="dt">' + ds + ' · ' + won(x.price) + (x.monthly ? " / 매달" : "") + ' · ' + esc(x.tag) + '</div></div>' +
+    '<div class="amt ' + (x.held ? "h" : "b") + '">' + won(x.future) + '</div>' +
+    '<button class="del" onclick="del(' + x.id + ')">×</button></div>';
+}
+function esc(s){
+  return String(s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
+  });
+}
+function del(id){
+  S.records = S.records.filter(function(x){ return x.id !== id; });
+  save(); renderLog();
+}
+function resetAll(){
+  if(!confirm("기록을 전부 지울까요? (졸업 목표 설정은 남습니다)")) return;
+  S.records = []; save(); renderLog();
+}
+
+setKind(S.kind || "once");
+renderGoal();
+document.addEventListener("touchstart", function(){}, {passive:true});
+</script>
+</body>
+</html>
