@@ -118,6 +118,7 @@ tr.hit td{color:#5be09b;font-weight:700}
     <label class="chk"><input type="checkbox" id="q1"><span>이건 <b>자산</b>을 사는 돈이다<small>주식·부동산처럼 나중에 돈을 낳아주는 것 (닭)</small></span></label>
     <label class="chk"><input type="checkbox" id="q2"><span>내 <b>돈 버는 능력</b>이 올라간다<small>수익률 공부, 기술 습득, 상품 만들기, 노출 늘리기</small></span></label>
     <label class="chk"><input type="checkbox" id="q3"><span>이게 없으면 <b>생활이 안 된다</b><small>진짜 필수인지 한 번 더 생각해보세요</small></span></label>
+    <label class="chk"><input type="checkbox" id="q5"><span>없어도 되지만 <b>삶의 질</b>을 올려준다<small>내 졸업이 며칠 미뤄지는지 계산해서 판정합니다</small></span></label>
     <label class="chk"><input type="checkbox" id="q4"><span>솔직히 <b>남한테 보여주고 싶은</b> 마음도 있다<small>남의 시선에 내 시간을 지불하는 것</small></span></label>
     <button class="big" onclick="judge()">판정하기</button>
   </div>
@@ -285,10 +286,21 @@ function judge(){
   var q2 = document.getElementById("q2").checked;
   var q3 = document.getElementById("q3").checked;
   var q4 = document.getElementById("q4").checked;
+  var q5 = document.getElementById("q5").checked;
 
   var g = calcGoal(S);
   var r = g.r, n = g.years;
   var monthly = (S.kind === "month");
+
+  /* 이 지출로 졸업이 며칠 미뤄지는가 */
+  var n2 = monthly ? yearsTo(g.need, g.P, g.A - price*12, r)
+                   : yearsTo(g.need, g.P - price, g.A, r);
+  var delayDays = (isFinite(n2) && isFinite(n)) ? (n2 - n) * 365 : Infinity;
+  function delayText(){
+    if(!isFinite(delayDays)) return "졸업이 불가능해집니다";
+    if(delayDays < 60) return Math.round(delayDays) + "일";
+    return (delayDays/30.4).toFixed(1) + "개월";
+  }
 
   var tag, level, why;
   if(q1){
@@ -301,15 +313,34 @@ function judge(){
   } else if(q4){
     tag = "🎭 남의 시선 지출"; level = "stop";
     why = "남이 먼저 졸업하는 걸 싫어하는 게 사람 마음입니다. 그 시선 때문에 내 졸업을 미루지 마세요.";
-  } else if(monthly && !q3){
-    tag = "⛓️ 새로 생기는 고정지출"; level = "stop";
-    why = "한 번 쓰는 돈보다 매달 나가는 돈이 훨씬 무섭습니다. 평생 따라옵니다.";
   } else if(monthly && q3){
     tag = "⛓️ 꼭 필요한 고정지출"; level = "think";
     why = "필수라도 매달 나가는 돈은 자산을 영구히 잡아먹습니다. 더 싼 대안이 없는지 한 번만 더 보세요.";
   } else if(q3){
     tag = "🥚 필요한 달걀 (필수 소비)"; level = "good";
     why = "필요한 소비입니다. 다만 아래 미래 금액은 기억해두세요.";
+  } else if(q5){
+    /* 삶의 질형 : 졸업이 며칠 미뤄지는지로 판정. 매달 나가는 지출은 기준을 절반으로. */
+    var lim1 = monthly ? 15 : 30;
+    var lim2 = monthly ? 45 : 90;
+    tag = "🌿 삶의 질 지출";
+    if(delayDays <= lim1){
+      level = "good";
+      why = "내 졸업을 " + delayText() + "만 미룹니다. 그 정도면 삶의 질과 바꿀 만합니다. 이런 소비까지 다 참으면 오래 못 갑니다.";
+    } else if(delayDays <= lim2){
+      level = "think";
+      why = "내 졸업을 " + delayText() + " 미룹니다. 이 물건이 그만큼의 시간값을 하는지 하루만 자고 나서 결정하세요.";
+    } else {
+      level = "stop";
+      why = "삶의 질치고는 너무 비쌉니다. 내 졸업을 " + delayText() + " 미룹니다. 같은 만족을 주는 더 싼 방법을 먼저 찾아보세요.";
+    }
+    if(monthly){
+      tag = "🌿 삶의 질 고정지출";
+      if(level !== "stop") why += " 다만 매달 나가는 돈이라 한 번 만들면 평생 따라옵니다.";
+    }
+  } else if(monthly){
+    tag = "⛓️ 새로 생기는 고정지출"; level = "stop";
+    why = "한 번 쓰는 돈보다 매달 나가는 돈이 훨씬 무섭습니다. 평생 따라옵니다.";
   } else {
     tag = "🍬 그냥 달걀 (선택 소비)"; level = "think";
     why = "지금 쓰는 돈은 미래의 내가 다시 벌어서 갚아야 합니다.";
@@ -327,9 +358,8 @@ function judge(){
     futureValue = assetEq;
     h += '<div class="big-num">' + won(assetEq) + '</div>';
     h += '<p>이 지출을 평생 감당하려면 필요한 <b>자산</b>입니다. (×' + mult + ' 규칙)</p>';
-    var n2 = yearsTo(g.need, g.P, g.A - price*12, r);
-    if(isFinite(n2) && isFinite(n)){
-      h += '<p>👉 내 졸업이 <b style="color:#ff9db3">' + ((n2-n)*12).toFixed(1) + '개월</b> 미뤄집니다.</p>';
+    if(isFinite(delayDays)){
+      h += '<p>👉 내 졸업이 <b style="color:#ff9db3">' + delayText() + '</b> 미뤄집니다.</p>';
     } else if(isFinite(n)){
       h += '<p>👉 이 지출을 떠안으면 <b style="color:#ff9db3">졸업이 불가능</b>해집니다.</p>';
     }
@@ -339,6 +369,7 @@ function judge(){
     h += '<div class="big-num">' + won(futureValue) + '</div>';
     if(isFinite(n)){
       h += '<p>안 쓰고 굴렸다면 <b>' + n.toFixed(1) + '년 뒤</b>(졸업 시점) 이 금액이 됩니다. (×' + mult2.toFixed(2) + ' 규칙)</p>';
+      if(isFinite(delayDays)) h += '<p>👉 내 졸업이 <b style="color:#ff9db3">' + delayText() + '</b> 미뤄집니다.</p>';
     } else {
       h += '<p>먼저 [졸업 목표] 탭에서 내 숫자를 넣으면 미래 금액이 계산됩니다.</p>';
     }
@@ -366,7 +397,7 @@ function record(held){
     (held ? "지킨 미래 자산 " + won(lastJudge.future) : "다음엔 한 번 더 생각해봐요") + '</p></div>';
   document.getElementById("j-name").value = "";
   document.getElementById("j-price").value = "";
-  ["q1","q2","q3","q4"].forEach(function(i){ document.getElementById(i).checked = false; });
+  ["q1","q2","q3","q4","q5"].forEach(function(i){ document.getElementById(i).checked = false; });
   lastJudge = null;
 }
 
