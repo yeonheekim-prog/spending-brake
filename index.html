@@ -90,6 +90,12 @@ tr.hit td{color:#5be09b;font-weight:700}
 .hero .big-num{color:#5be09b;font-size:34px}
 .presets{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 .presets button{flex:1;min-width:72px;min-height:42px;border-radius:10px;border:1px solid #303a54;background:#111726;color:#8b96ad;font-size:12px;font-family:inherit}
+button.big.wait{background:#7a5e1f;color:#fff3d6}
+.bar{height:8px;border-radius:99px;background:#111726;overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#7a5e1f,#f0c257)}
+.dday{font-size:14px;font-weight:700;color:#f0c257;margin:8px 0 0}
+.card.ready{border-color:#1f6b45}
+.card.ready .dday{color:#5be09b}
 .presets button.on{border-color:#5b8cff;color:#cfe0ff;background:#243255}
 </style>
 </head>
@@ -120,10 +126,27 @@ tr.hit td{color:#5be09b;font-weight:700}
     <label class="chk"><input type="checkbox" id="q3"><span>이게 없으면 <b>생활이 안 된다</b><small>진짜 필수인지 한 번 더 생각해보세요</small></span></label>
     <label class="chk"><input type="checkbox" id="q5"><span>없어도 되지만 <b>삶의 질</b>을 올려준다<small>내 졸업이 며칠 미뤄지는지 계산해서 판정합니다</small></span></label>
     <label class="chk"><input type="checkbox" id="q4"><span>솔직히 <b>남한테 보여주고 싶은</b> 마음도 있다<small>남의 시선에 내 시간을 지불하는 것</small></span></label>
+  </div>
+
+  <div class="card">
+    <h2>사용 계획 3질문</h2>
+    <p class="note" style="margin-top:0">사는 건 시작일 뿐입니다. 답이 안 나오면 아직 살 때가 아닙니다. (자산·필수 지출은 빈칸이어도 괜찮아요)</p>
+    <label>① 어디에 둘 건가요?</label>
+    <input type="text" id="p-where" placeholder="예: 거실 TV 옆 서랍">
+    <label>② 언제 쓸 건가요?</label>
+    <input type="text" id="p-when" placeholder="예: 매주 화·목 아침">
+    <label>③ 일주일에 몇 분 쓸 건가요?</label>
+    <div class="unit"><input type="number" id="p-mins" inputmode="numeric" placeholder="0"><span class="u">분</span></div>
     <button class="big" onclick="judge()">판정하기</button>
   </div>
 
   <div id="j-result"></div>
+</section>
+
+<section id="t-wait" class="hidden">
+  <h1>⏳ 한 달 기다리기</h1>
+  <p class="sub">"오늘만 할인"은 기다리면 이깁니다. 일주일만 지나도 대부분 사라져요.</p>
+  <div id="w-list"></div>
 </section>
 
 <section id="t-goal" class="hidden">
@@ -171,6 +194,7 @@ tr.hit td{color:#5be09b;font-weight:700}
 
 <nav class="tabs">
   <button id="tab-judge" class="on" onclick="showTab('judge')"><b>🛑</b>소비 판정</button>
+  <button id="tab-wait" onclick="showTab('wait')"><b>⏳</b><span id="wait-lbl">기다리기</span></button>
   <button id="tab-goal" onclick="showTab('goal')"><b>🎓</b>졸업 목표</button>
   <button id="tab-log" onclick="showTab('log')"><b>📒</b>기록</button>
 </nav>
@@ -178,7 +202,8 @@ tr.hit td{color:#5be09b;font-weight:700}
 <script>
 "use strict";
 var KEY = "spendingBrake_v1";
-var DEF = { living:400, saving:200, asset:0, rate:6, type:"fin", kind:"once", records:[] };
+var DEF = { living:400, saving:200, asset:0, rate:6, type:"fin", kind:"once", records:[], waits:[] };
+var WAIT_DAYS = 30;
 var S = load();
 
 function load(){
@@ -188,6 +213,7 @@ function load(){
     var o = JSON.parse(raw);
     for(var k in DEF){ if(!(k in o)) o[k] = DEF[k]; }
     if(!Array.isArray(o.records)) o.records = [];
+    if(!Array.isArray(o.waits)) o.waits = [];
     return o;
   }catch(e){ return JSON.parse(JSON.stringify(DEF)); }
 }
@@ -260,11 +286,12 @@ function calcGoal(o){
 }
 
 function showTab(name){
-  ["judge","goal","log"].forEach(function(t){
+  ["judge","wait","goal","log"].forEach(function(t){
     document.getElementById("t-"+t).classList.toggle("hidden", t !== name);
     document.getElementById("tab-"+t).classList.toggle("on", t === name);
   });
   if(name === "log") renderLog();
+  if(name === "wait") renderWait();
   if(name === "goal") renderGoal();
   window.scrollTo(0,0);
 }
@@ -346,6 +373,19 @@ function judge(){
     why = "지금 쓰는 돈은 미래의 내가 다시 벌어서 갚아야 합니다.";
   }
 
+  /* 사용 계획 3질문 : 자산·필수 지출이 아니면 셋 다 답해야 함 */
+  var plan = {
+    where: document.getElementById("p-where").value.trim(),
+    when:  document.getElementById("p-when").value.trim(),
+    mins:  num("p-mins")
+  };
+  var planOk = plan.where && plan.when && plan.mins > 0;
+  var needPlan = !q1 && !q3;
+  if(needPlan && !planOk){
+    level = "stop";
+    why = "사용 계획에 답하지 못했습니다. 사는 순간 해결되는 건 없고, 써야 시작됩니다. 답이 나올 때까지 한 달 기다려보세요. " + why;
+  }
+
   var futureValue = 0;
   var h = '<div class="res ' + level + '">';
   h += '<span class="tag">' + tag + '</span>';
@@ -374,12 +414,18 @@ function judge(){
       h += '<p>먼저 [졸업 목표] 탭에서 내 숫자를 넣으면 미래 금액이 계산됩니다.</p>';
     }
   }
+  if(needPlan && planOk){
+    h += '<p>📍 ' + esc(plan.where) + ' · 🗓️ ' + esc(plan.when) + ' · ⏱️ 매주 ' + plan.mins + '분</p>';
+  }
   h += '<p class="why">' + why + '</p>';
+  if(level !== "good" && !q1){
+    h += '<button class="big wait" onclick="addWait()">⏳ 한 달 기다리기 목록에 넣기</button>';
+  }
   h += '<div class="row2"><button class="hold" onclick="record(1)">참았다 💪</button><button class="bought" onclick="record(0)">샀다</button></div>';
   h += '</div>';
 
   document.getElementById("j-result").innerHTML = h;
-  lastJudge = { name:name, price:price, monthly:monthly, tag:tag, future:futureValue };
+  lastJudge = { name:name, price:price, monthly:monthly, tag:tag, future:futureValue, plan:plan };
   document.getElementById("j-result").scrollIntoView({behavior:"smooth", block:"start"});
 }
 
@@ -395,10 +441,83 @@ function record(held){
   document.getElementById("j-result").innerHTML =
     '<div class="res ' + (held ? "good" : "think") + '"><p class="verdict">기록했습니다' + (held ? " 💪" : "") + '</p><p>' +
     (held ? "지킨 미래 자산 " + won(lastJudge.future) : "다음엔 한 번 더 생각해봐요") + '</p></div>';
-  document.getElementById("j-name").value = "";
-  document.getElementById("j-price").value = "";
+  clearJudge();
+}
+function clearJudge(){
+  ["j-name","j-price","p-where","p-when","p-mins"].forEach(function(i){ document.getElementById(i).value = ""; });
   ["q1","q2","q3","q4","q5"].forEach(function(i){ document.getElementById(i).checked = false; });
   lastJudge = null;
+}
+
+/* ---- 한 달 기다리기 ---- */
+function dayNum(ts){ var d = new Date(ts); return Math.round(new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() / 864e5); }
+function daysSince(ts){ return dayNum(Date.now()) - dayNum(ts); }
+
+function addWait(){
+  if(!lastJudge) return;
+  S.waits.unshift({
+    id: Date.now(), name: lastJudge.name, price: lastJudge.price,
+    monthly: lastJudge.monthly, tag: lastJudge.tag,
+    future: (isFinite(lastJudge.future) ? lastJudge.future : 0),
+    plan: lastJudge.plan, ts: Date.now()
+  });
+  save();
+  document.getElementById("j-result").innerHTML =
+    '<div class="res think"><p class="verdict">⏳ 기다리기 시작</p><p>' + WAIT_DAYS + '일 뒤에 다시 물어볼게요. 그때도 사용 계획에 답할 수 있으면 사도 됩니다.</p></div>';
+  clearJudge();
+  updateWaitBadge();
+}
+
+function finishWait(id, held){
+  var w = null;
+  S.waits = S.waits.filter(function(x){ if(x.id === id){ w = x; return false; } return true; });
+  if(!w) return;
+  if(!held && daysSince(w.ts) < WAIT_DAYS &&
+     !confirm("아직 " + (WAIT_DAYS - daysSince(w.ts)) + "일 남았어요. 그래도 샀다고 기록할까요?")){
+    S.waits.unshift(w); return;
+  }
+  S.records.unshift({ id: Date.now(), name: w.name, price: w.price, monthly: w.monthly,
+    tag: w.tag + " · " + daysSince(w.ts) + "일 기다림", future: w.future, held: !!held, ts: Date.now() });
+  save(); renderWait(); updateWaitBadge();
+}
+function delWait(id){
+  if(!confirm("기록 없이 목록에서만 지울까요?")) return;
+  S.waits = S.waits.filter(function(x){ return x.id !== id; });
+  save(); renderWait(); updateWaitBadge();
+}
+
+function renderWait(){
+  var box = document.getElementById("w-list");
+  if(!S.waits.length){
+    box.innerHTML = '<div class="card"><p class="empty">기다리는 물건이 없습니다.<br>판정 결과에서 [⏳ 한 달 기다리기]를 누르면 여기로 옵니다.</p></div>';
+    return;
+  }
+  box.innerHTML = S.waits.map(function(w){
+    var d = daysSince(w.ts), left = WAIT_DAYS - d, done = left <= 0;
+    var pct = Math.min(100, Math.round(d / WAIT_DAYS * 100));
+    var p = w.plan || {};
+    var msg = done ? "한 달이 지났어요. 아래 계획대로 정말 쓸 건가요?"
+             : (d >= 7 ? "일주일이 지났어요. 아직도 사고 싶나요?" : "충동은 보통 일주일이면 사라져요.");
+    var h = '<div class="card' + (done ? ' ready' : '') + '">';
+    h += '<div class="item" style="padding-top:0"><div><div class="nm">' + esc(w.name) + '</div>' +
+         '<div class="dt">' + won(w.price) + (w.monthly ? " / 매달" : "") + ' · 미래 금액 ' + won(w.future) + '</div></div>' +
+         '<button class="del" onclick="delWait(' + w.id + ')">×</button></div>';
+    h += '<div class="bar"><i style="width:' + pct + '%"></i></div>';
+    h += '<p class="dday">' + (done ? "✅ 기다리기 끝 (" + d + "일째)" : "D-" + left + " · " + d + "일째 기다리는 중") + '</p>';
+    h += '<p class="note" style="margin-top:4px">' + msg + '</p>';
+    if(p.where || p.when || p.mins){
+      h += '<p class="note">📍 ' + esc(p.where || "-") + ' · 🗓️ ' + esc(p.when || "-") + ' · ⏱️ 매주 ' + (p.mins || 0) + '분</p>';
+    } else {
+      h += '<p class="note" style="color:#f0c257">사용 계획이 비어 있어요. 지금도 답이 안 나오면 필요 없는 물건입니다.</p>';
+    }
+    h += '<div class="row2"><button class="hold" onclick="finishWait(' + w.id + ',1)">마음 사라짐 💪</button>' +
+         '<button class="bought" onclick="finishWait(' + w.id + ',0)">' + (done ? "그래도 산다" : "샀다") + '</button></div>';
+    return h + '</div>';
+  }).join("");
+}
+function updateWaitBadge(){
+  var ready = S.waits.filter(function(w){ return daysSince(w.ts) >= WAIT_DAYS; }).length;
+  document.getElementById("wait-lbl").textContent = S.waits.length ? "기다리기 " + S.waits.length + (ready ? " ✅" : "") : "기다리기";
 }
 
 function setRate(v){ document.getElementById("g-rate").value = v; saveGoal(); }
@@ -507,6 +626,7 @@ function resetAll(){
 
 setKind(S.kind || "once");
 renderGoal();
+updateWaitBadge();
 document.addEventListener("touchstart", function(){}, {passive:true});
 </script>
 </body>
